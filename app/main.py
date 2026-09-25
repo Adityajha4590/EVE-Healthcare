@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from app.core.exceptions import AppException
 from app.core.logging import get_logger, setup_logging
-from app.routers import health
+from app.routers import auth, health
 
 logger = get_logger(__name__)
 
@@ -45,6 +45,7 @@ def create_app() -> FastAPI:
 
     # --- Routers ---
     app.include_router(health.router)
+    app.include_router(auth.router)
 
     return app
 
