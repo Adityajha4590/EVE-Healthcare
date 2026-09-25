@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     # Webhook
     WEBHOOK_SECRET: str = "dev-webhook-secret-change-in-production"
 
+    # Rate Limiting
+    RATE_LIMIT_GLOBAL: str = "100/minute"
+    RATE_LIMIT_AUTH: str = "5/minute"
+
     model_config = {
         "env_file": ".env",
         "case_sensitive": True,

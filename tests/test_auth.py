@@ -243,3 +243,21 @@ class TestUserModel:
 
         with pytest.raises(IntegrityError):
             db_session.flush()
+
+# ============================================================================
+# Rate Limiting
+# ============================================================================
+
+class TestRateLimiting:
+    """Rate limiting tests."""
+
+    def test_auth_rate_limit(self, client):
+        # The limit for auth is 5/minute.
+        # Send 5 requests (should succeed/422 but not 429)
+        for _ in range(5):
+            resp = client.post("/auth/login", json={"email": "limit@example.com", "password": "password"})
+            assert resp.status_code != 429
+
+        # 6th request should hit the rate limit
+        resp = client.post("/auth/login", json={"email": "limit@example.com", "password": "password"})
+        assert resp.status_code == 429

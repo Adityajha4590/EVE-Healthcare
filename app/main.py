@@ -7,6 +7,10 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from app.core.exceptions import AppException
 from app.core.logging import get_logger, setup_logging
+from app.limiter import limiter
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from app.routers import auth, bookings, centres, health, payments, webhooks
 
 logger = get_logger(__name__)
@@ -42,6 +46,10 @@ def create_app() -> FastAPI:
             status_code=exc.status_code,
             content={"detail": exc.detail},
         )
+
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app.add_middleware(SlowAPIMiddleware)
 
     # --- Routers ---
     app.include_router(health.router)

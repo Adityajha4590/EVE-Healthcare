@@ -32,6 +32,26 @@ def generate_webhook_signature(payload: str, secret: str) -> str:
     ).hexdigest()
 
 
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception
+
+def is_transient_error(exception: Exception) -> bool:
+    if isinstance(exception, httpx.HTTPStatusError):
+        return exception.response.status_code >= 500
+    if isinstance(exception, httpx.RequestError):
+        return True
+    return False
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception(is_transient_error),
+    reraise=True,
+)
+async def _send_webhook(url: str, payload_str: str, headers: dict):
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        resp = await client.post(url, content=payload_str, headers=headers)
+        resp.raise_for_status()
+
 async def simulated_gateway_task(
     transaction_id: str, amount: str, target_url: str
 ):
@@ -61,12 +81,11 @@ async def simulated_gateway_task(
         "X-Webhook-Signature": signature,
     }
     
-    async with httpx.AsyncClient() as client:
-        try:
-            await client.post(target_url, content=payload_str, headers=headers)
-            logger.info("simulated_gateway_callback_sent", transaction_id=transaction_id)
-        except Exception as e:
-            logger.error("simulated_gateway_callback_failed", error=str(e), transaction_id=transaction_id)
+    try:
+        await _send_webhook(target_url, payload_str, headers)
+        logger.info("simulated_gateway_callback_sent", transaction_id=transaction_id)
+    except Exception as e:
+        logger.error("simulated_gateway_callback_failed", error=str(e), transaction_id=transaction_id)
 
 
 def initiate_payment(

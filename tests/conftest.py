@@ -56,6 +56,9 @@ def db_session(test_engine):
 @pytest.fixture()
 def client(db_session: Session):
     """Provide a FastAPI TestClient with the database dependency overridden."""
+    from app.limiter import limiter
+    limiter.reset()  # Reset rate limiting state between tests
+
     app = create_app()
 
     def _override_get_db():
