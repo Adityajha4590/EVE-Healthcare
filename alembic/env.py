@@ -18,7 +18,7 @@ if config.config_file_name is not None:
 
 # Target metadata for autogenerate support
 # Import all models here so they are registered with Base.metadata
-from app.models import user, centre, test, booking  # noqa: F401
+from app.models import user, centre, test, booking, payment, webhook_event  # noqa: F401
 target_metadata = Base.metadata
 
 
