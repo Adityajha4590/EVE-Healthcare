@@ -2,8 +2,8 @@
 
 Backend service for diagnostic test bookings and simulated payments.
 
-**Current Scope:** Foundation + Authentication (Phases 1–2).
-Booking, payment, and webhook functionality are planned for later phases and are not yet implemented.
+**Current Scope:** Foundation + Authentication + Diagnostics & Bookings (Phases 1–3).
+Payment and webhook functionality are planned for later phases and are not yet implemented.
 
 ## Quick Start
 

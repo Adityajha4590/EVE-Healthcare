@@ -34,11 +34,17 @@ def test_engine():
 def db_session(test_engine):
     """Provide a transactional database session that rolls back after each test.
 
-    This ensures complete test isolation with zero cleanup overhead.
+    Uses ``join_transaction_mode="create_savepoint"`` so that service-level
+    ``session.commit()`` calls only commit a SAVEPOINT, keeping the outer
+    transaction intact for rollback at teardown.  This ensures complete test
+    isolation even when application code commits.
     """
     connection = test_engine.connect()
     transaction = connection.begin()
-    session = sessionmaker(bind=connection)()
+    session = Session(
+        bind=connection,
+        join_transaction_mode="create_savepoint",
+    )
 
     yield session
 

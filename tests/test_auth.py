@@ -43,9 +43,9 @@ class TestSignup:
         assert "created_at" in data
 
     def test_signup_normalizes_email(self, client):
-        resp = _signup(client, email="  Test@EXAMPLE.com  ")
+        resp = _signup(client, email="  Normalize@EXAMPLE.com  ")
         assert resp.status_code == 201
-        assert resp.json()["email"] == "test@example.com"
+        assert resp.json()["email"] == "normalize@example.com"
 
     def test_signup_response_excludes_password(self, client):
         resp = _signup(client)
