@@ -114,7 +114,7 @@ The backend utilizes PostgreSQL managed by SQLAlchemy and Alembic.
 
 ## Testing
 
-Run the exhaustive 81-test suite locally to verify rate-limits, idempotency, retries, and core logic:
+Run the exhaustive 88-test suite locally to verify rate-limits, idempotency, retries, and core logic:
 
 ```bash
 pytest
