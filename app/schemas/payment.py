@@ -6,6 +6,10 @@ from decimal import Decimal
 from pydantic import BaseModel
 
 
+class PaymentCreateRequest(BaseModel):
+    """Request schema for initiating a payment."""
+    booking_id: str
+
 class PaymentResponse(BaseModel):
     """Public representation of a payment."""
 

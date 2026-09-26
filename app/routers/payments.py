@@ -1,14 +1,55 @@
 """Payment routes."""
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Request, Header
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_current_user, get_db
 from app.models.user import User
-from app.schemas.payment import PaymentResponse
+from app.schemas.payment import PaymentResponse, PaymentCreateRequest
 from app.services.payment import get_payment, initiate_payment
+from app.routers.webhooks import payment_webhook_endpoint
 
 router = APIRouter(tags=["payments"])
+
+@router.post(
+    "/payments/",
+    response_model=PaymentResponse,
+    status_code=202,
+    summary="Initiate a simulated payment (compatibility alias)",
+)
+def pay_for_booking_alias_endpoint(
+    body: PaymentCreateRequest,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Alias for POST /bookings/{booking_id}/pay
+    """
+    base_url = str(request.base_url).rstrip("/")
+    return initiate_payment(
+        db,
+        user=current_user,
+        booking_id=body.booking_id,
+        base_url=base_url,
+        background_tasks=background_tasks,
+    )
+
+@router.post(
+    "/payments/webhook/",
+    summary="Receive payment outcome callback (compatibility alias)",
+    status_code=200,
+)
+async def payment_webhook_alias_endpoint(
+    request: Request,
+    x_webhook_signature: str = Header(None),
+    db: Session = Depends(get_db),
+):
+    """
+    Alias for POST /webhooks/payments
+    """
+    return await payment_webhook_endpoint(request, x_webhook_signature, db)
 
 
 @router.post(
